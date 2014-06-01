@@ -1,0 +1,13 @@
+total 112
+-rw-r--r--  1 baron  users    547 Apr 11 12:00:00 1990 CONST.H
+-rw-r--r--  1 baron  users   4914 May 23 02:53:00 1995 DEZO2.CM
+-rw-r--r--  1 baron  users  22315 May 21 15:46:34 1994 DOSCALL2.MAC
+-rw-r--r--  1 baron  users   8011 Apr 13 23:01:54 1994 HASMACRO.MAC
+-rw-r--r--  1 baron  users   5686 Dec  1 18:28:00 1994 NAW.MAC
+-rw-r--r--  1 baron  users   7043 Aug 12 20:35:46 1995 ROMOON.DOC
+-rw-r--r--  1 baron  users   4035 Aug 12 20:58:06 1995 TECH.CM
+-rw-r--r--  1 baron  users   3256 Aug 12 19:56:28 1995 doscall.mac
+-rw-r--r--  1 baron  users   5066 Aug 12 19:57:44 1995 iocscall.mac
+-rw-r--r--  1 baron  users    664 Aug 12 20:37:58 1995 romn001.hed
+-rw-r--r--  1 baron  users   2676 Nov 29 17:31:22 1994 romreader.has
+-rwxr-xr-x  1 baron  users    636 Jan  8 04:35:30 1995 romreader.x

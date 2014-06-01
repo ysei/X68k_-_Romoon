@@ -1,0 +1,1480 @@
+**********************************************
+*                                            *
+*                                            *
+*               DOSCALL2 MACRO               *
+*                                            *
+*                               by T.Kubota  *
+*			debugged by S.Yamaguchi
+**********************************************
+
+~EXIT		macro
+		dc.w	$ff00
+		endm
+
+~GETCHAR	macro
+		dc.w	$ff01
+		endm
+
+~PUTCHAR	macro	code
+		move.w	code,-(sp)
+		dc.w	$ff02
+		addq.l	#2,sp
+		endm
+
+~COMINP		macro
+		dc.w	$ff03
+		endm
+
+~COMOUT		macro	code
+		move.w	code,-(sp)
+		dc.w	$ff04
+		addq.l	#2,sp
+		endm
+
+~PRNOUT		macro	code
+		move.w	code,-(sp)
+		dc.w	$ff05
+		addq.l	#2,sp
+		endm
+
+~INPOUT		macro	code
+		move.w	code,-(sp)
+		dc.w	$ff06
+		addq.l	#2,sp
+		endm
+
+~INKEY		macro
+		dc.w	$ff07
+		endm
+
+~GETC		macro
+		dc.w	$ff08
+		endm
+
+~PRINT		macro	mesptr
+		move.l	mesptr,-(sp)
+		dc.w	$ff09
+		addq.l	#4,sp
+		endm
+
+~GETS		macro	inpptr
+		move.w	inpptr,-(sp)
+		dc.w	$ff0a
+		addq.l	#2,sp
+		endm
+
+~KEYSNS		macro
+		dc.w	$ff0b
+		endm
+
+~KFLUSH1	macro
+		move.w	#$0001,-(sp)
+		dc.w	$ff0c
+		addq.l	#2,sp
+		endm
+
+~KFLUSHGP	macro
+		~KFLUSH1
+		endm
+	
+~KFLUSH6	macro	code
+		move.w	code,-(sp)
+		move.w	#$0006,-(sp)
+		dc.w	$ff0c
+		addq.l	#4,sp
+		endm
+
+~KFLUSHIO	macro	code
+		~KFLUSH6	code
+		endm
+
+~KFLUSH7	macro
+		move.w	#$0007,-(sp)
+		dc.w	$ff0c
+		addq.l	#2,sp
+		endm
+
+~KFLUSHIN	macro
+		~KFLUSH7
+		endm
+
+~KFLUSH8	macro
+		move.w	#$0008,-(sp)
+		dc.w	$ff0c
+		addq.l	#2,sp
+		endm
+
+~KFLUSHGC	macro
+		~KFLUSH8
+		endm
+
+~KFLUSHA	macro	inpptr
+		move.l	inpptr,-(sp)
+		move.w	#$000a,-(sp)
+		dc.w	$ff0c
+		addq.l	#6,sp
+		endm
+
+~KFLUSHGS	macro	inpptr
+		~KFLUSHA	inpptr
+		endm
+
+~FFLUSH		macro
+		dc.w	$ff0d
+		endm
+
+~CHGDRV		macro	drive
+		move.w	drive,-(sp)
+		dc.w	$ff0e
+		addq.l	#2,sp
+		endm
+
+~DRVCTRL	macro mode,drive
+		move.b	drive,-(sp)
+		move.b	mode,-(sp)
+		dc.w	$ff0f
+		addq.l	#2,sp
+		endm
+
+~CONSNS		macro
+		dc.w	$ff10
+		endm
+
+~PRNSNS		macro
+		dc.w	$ff11
+		endm
+
+~CINSNS		macro
+		dc.w	$ff12
+		endm
+
+~COUTSNS	macro
+		dc.w	$ff13
+		endm
+
+~FATCHK		macro	file,buffer
+		move.l	buffer,-(sp)
+		move.l	file,-(sp)
+		dc.w	$ff17
+		addq.l	#8,sp
+		endm
+
+~FATCHK2	macro	file,buffer,len
+		move.w	len,-(sp)
+		move.l	buffer,-(sp)
+		ori.b	#$80,(sp)
+		move.l	file,-(sp)
+		dc.w	$ff17
+		lea	10(sp),sp
+		endm
+
+~HENDSP0	macro
+		move.w	#$0000,-(sp)
+		dc.w	$ff18
+		addq.l	#2,sp
+		endm
+
+~HENDSPMO	macro
+		~HENDSP0
+		endm
+
+~HENDSP1	macro	pos,mesptr
+		move.l	mesptr,-(sp)
+		move.w	pos,-(sp)
+		move.w	#$0001,-(sp)
+		dc.w	$ff18
+		addq.l	#8,sp
+		endm
+
+~HENDSPMP	macro	pos,mesptr
+		~HENDSP1	pos,mesptr
+		endm
+
+~HENDSP2	macro	pos,mesptr
+		move.l	mesptr,-(sp)
+		move.w	pos,-(sp)
+		move.w	#$0002,-(sp)
+		dc.w	$ff18
+		addq.l	#8,sp
+		endm
+
+~HENDSPMR	macro	pos,mesptr
+		~HENDSP2	pos,mesptr
+		endm
+
+~HENDSP3	macro	
+		move.w	#$0003,-(sp)
+		dc.w	$ff18
+		addq.l	#2,sp
+		endm
+
+~HENDSPMC	macro
+		~HENDSP3
+		endm
+
+~HENDSP4	macro	
+		move.w	#$0004,-(sp)
+		dc.w	$ff18
+		addq.l	#2,sp
+		endm
+
+~HENDSPIO	macro
+		~HENDSP4
+		endm
+
+~HENDSP5	macro	pos,mesptr
+		move.l	mesptr,-(sp)
+		move.w	pos,-(sp)
+		move.w	#$0005,-(sp)
+		dc.w	$ff18
+		addq.l	#8,sp
+		endm
+
+~HENDSPIP	macro	pos,mesptr
+		~HENDSP5	pos,mesptr
+		endm
+
+~HENDSP6	macro	pos,mesptr
+		move.l	mesptr,-(sp)
+		move.w	pos,-(sp)
+		move.w	#$0006,-(sp)
+		dc.w	$ff18
+		addq.l	#8,sp
+		endm
+
+~HENDSPIR	macro	pos,mesptr
+		~HENDSP6	pos,mesptr
+		endm
+
+~HENDSP7	macro	pos
+		move.w	pos,-(sp)
+		move.w	#$0007,-(sp)
+		dc.w	$ff18
+		addq.l	#4,sp
+		endm
+
+~HENDSPIC	macro
+		~HENDSP7
+		endm
+
+~HENDSP8	macro	
+		move.w	#$0008,-(sp)
+		dc.w	$ff18
+		addq.l	#2,sp
+		endm
+
+~HENDSPSO	macro
+		~HENDSP8
+		endm
+
+~HENDSP9	macro	pos,mesptr
+		move.l	mesptr,-(sp)
+		move.w	pos,-(sp)
+		move.w	#$0009,-(sp)
+		dc.w	$ff18
+		addq.l	#8,sp
+		endm
+
+~HENDSPSP	macro	pos,mesptr
+		~HENDSP9	pos,mesptr
+		endm
+
+~HENDSP10	macro	pos,mesptr
+		move.l	mesptr,-(sp)
+		move.w	pos,-(sp)
+		move.w	#$0007,-(sp)
+		dc.w	$ff18
+		addq.l	#8,sp
+		endm
+
+~HENDSPSR	macro	pos,mesptr
+		~HENDSP10	pos,mesptr
+		endm
+
+~HENDSP11	macro	
+		move.w	#$0011,-(sp)
+		dc.w	$ff18
+		ddq.l	#2,sp
+		endm
+
+~HENDSPSC	macro
+		~HENDSP11
+		endm
+
+~CURDRV		macro
+		dc.w	$ff19
+		endm
+
+~GETSS		macro	inpptr
+		move.l	inpptr,-(sp)
+		dc.w	$ff1a
+		addq.l	#4,sp
+		endm
+
+~FGETC		macro	fileno
+		move.w	fileno,-(sp)
+		dc.w	$ff1b
+		addq.l	#2,sp
+		endm
+
+~FGETS		macro	inpptr,fileno
+		move.w	fileno,-(sp)
+		move.l	inpptr,-(sp)
+		dc.w	$ff1c
+		addq.l	#6,sp
+		endm
+
+~FPUTC		macro	code,fileno
+		move.w	fileno,-(sp)
+		move.w	code,-(sp)
+		dc.w	$ff1d
+		addq.l	#4,sp
+		endm
+
+~FPUTS		macro	mesptr,fileno
+		move.w	fileno,-(sp)
+		move.l	memptr,-(sp)
+		dc.w	$ff1e
+		addq.l	#6,sp
+		endm
+
+~ALLCLOSE	macro
+		dc.w	$ff1f
+		endm
+
+~SUPER		macro	stack
+		move.l	-(sp)
+		dc.w	$ff20
+		addq.l	#4,sp
+		endm
+
+~FNCKEY0	macro	fno,buffer
+		move.l	buffer,-(sp)
+		move.b	fno,-(sp)
+		move.b	#$00,-(sp)
+		dc.w	$ff21
+		addq.l	#6,sp
+		endm
+
+~FNCKEYGT	macro fno,buffer
+		fnckey0	fno,buffer
+		endm
+	
+~FNCKEY1	macro	fno,buffer
+		move.l	buffer,-(sp)
+		move.b	fno,-(sp)
+		move.b	#$01,-(sp)
+		dc.w	$ff21
+		addq.l	#6,sp
+		endm
+
+~FNCKEYST	macro fno,buffer
+		fnckey1	fno,buffer
+		endm
+
+~CONCTRL0	macro  code
+		move.w	code,-(sp)
+		move.w	#$0000,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_PUTC		macro	code
+		~CONCTRL0	code
+		endm
+
+~CONCTRL1	macro  mesptr
+		move.l	mesptr,-(sp)
+		move.w	#$0001,-(sp)
+		dc.w	$ff23
+		addq.l	#6,sp
+		endm
+
+~C_PRINT	macro	mesptr
+		~CONCTRL1	mesptr
+		endm
+
+~CONCYRL2	macro  atr
+		move.w	atr,-(sp)
+		move.w	#$0002,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_COLOR	macro	atr
+		~CONCTRL2	atr
+		endm
+
+~CONCTRL3	macro  x,y
+		move.w	x,-(sp)
+		move.w	y-(sp)
+		move.w	#$0003,-(sp)
+		dc.w	$ff23
+		addq.l	#6,sp
+		endm
+
+~C_LOCATE	macro	x,y
+		~CONCTRL3	x,y
+		endm
+
+~CONCTRL4	macro
+		move.w	#$0004,-(sp)
+		dc.w	$ff23
+		addq.l	#2,sp
+		endm
+
+~C_DOWN_S	macro
+		~CONCTRL4
+		endm
+
+~CONCTRL5	macro
+		move.w	#$0005,-(sp)
+		dc.w	$ff23
+		addq.l	#2,sp
+		endm
+
+~C_UP_S		macro
+		~CONCTRL5
+		endm
+
+~CONCTRL6	macro  n
+		move.w	n,-(sp)
+		move.w	#$0006,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_DOWN		macro	n
+		~CONCTRL6	n
+		endm
+
+~CONCTRL7	macro  n
+		move.w	n,-(sp)
+		move.w	#$0007,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_UP		macro	n
+		~CONCTRL7	n
+		endm
+
+~CONCTRL8	macro  n
+		move.w	n,-(sp)
+		move.w	#$0008,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_RIGHT	macro	n
+		~CONCTRL8	n
+		endm
+
+~CONCTRL9	macro  n
+		move.w	n,-(sp)
+		move.w	#$0009,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_LEFT		macro	n
+		~CONCTRL9	n
+		endm
+
+~CONCTRL10_0	macro  
+		move.w	#$0000,-(sp)
+		move.w	#$0010,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_CLS_ED	macro	n
+		~CONCTRL10_0	n
+		endm
+
+~CONCTRL10_1	macro  
+		move.w	#$0001,-(sp)
+		move.w	#$0010,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_CLS_ST	macro
+		~CONCTRL10_1
+		endm
+
+~CONCTRL10_2	macro  
+		move.w	#$0002,-(sp)
+		move.w	#$0010,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_CLS_AL	macro
+		~CONCTRL10_2
+		endm
+
+~CONCTRL11_0	macro  
+		move.w	#$0000,-(sp)
+		move.w	#$0011,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_ERA_ED	macro
+		~CONCTRL11_0
+		endm
+
+~CONCTRL11_1	macro  
+		move.w	#$0001,-(sp)
+		move.w	#$0011,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_ERA_ST	macro
+		~CONCTRL10_1
+		endm
+
+~CONCTRL11_2	macro  
+		move.w	#$0002,-(sp)
+		move.w	#$0011,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_ERA_AL	macro
+		~CONCTRL11_2
+		endm
+
+~CONCTRL12	macro  n
+		move.w	n,-(sp)
+		move.w	#$0012,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_INS		macro	n
+		~CONCTRL12	n
+		endm
+
+~CONCTRL13	macro  n
+		move.w	n,-(sp)
+		move.w	#$0013,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_DEL		macro	n
+		~CONCTRL13	n
+		endm
+
+~CONCTRL14	macro  mod
+		move.w	mod,-(sp)
+		move.w	#$0014,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_FNKMOD	macro	mod
+		~CONCTRL14	mod
+		endm
+
+~CONCTRL15	macro  ys,yl
+		move.w	yl,-(sp)
+		move.w	ys,-(sp)
+		move.w	#$0015,-(sp)
+		dc.w	$ff23
+		addq.l	#6,sp
+		endm
+
+~C_WINDOW	macro	ys,yl
+		~CONCTRL15	ys,yl
+		endm
+
+~CONCTRL16	macro  mod
+		move.w	mod,-(sp)
+		move.w	#$0016,-(sp)
+		dc.w	$ff23
+		addq.l	#4,sp
+		endm
+
+~C_WIDTH	macro	mod
+		~CONCTRL16	mod
+		endm
+
+~CONCTRL17	macro
+		move.w	#$0017,-(sp)
+		dc.w	$ff23
+		addq.l	#2,sp
+		endm
+
+~C_CURON	macro
+		~CONCTRL17
+		endm
+
+~CONCTRL18	macro
+		move.w	#$0018,-(sp)
+		dc.w	$ff23
+		addq.l	#2,sp
+		endm
+
+~C_CUROFF	macro
+		~CONCTRL18
+		endm
+
+~KEYCTRL0	macro
+		move.w	#$0000,-(sp)
+		dc.w	$ff24
+		addq.l	#2,-(sp)
+		endm
+
+~K_KEYINP	macro
+		~KEYCTRL0
+		endm
+
+~KEYCTRL1	macro
+		move.w	#$0001,-(sp)
+		dc.w	$ff24
+		addq.l	#2,-(sp)
+		endm
+
+~K_KEYSNS	macro
+		~KEYCTRL1
+		endm
+
+~KEYCTRL2	macro
+		move.w	#$0002,-(sp)
+		dc.w	$ff24
+		addq.l	#2,-(sp)
+		endm
+
+~K_SFTSNS	macro
+		~KEYCTRL2
+		endm
+
+~KEYCTRL3	macro	group
+		move.w	group,-(sp)
+		move.w	#$0003,-(sp)
+		dc.w	$ff24
+		addq.l	#4,-(sp)
+		endm
+
+~K_KEYBIT	macro	group
+		~KEYCTRL3	group
+		endm
+
+~KEYCTRL4	macro	insmode
+		move.w	insmode,-(sp)
+		move.w	#$0004,-(sp)
+		dc.w	$ff24
+		addq.l	#4,-(sp)
+		endm
+
+~K_INSMOD	macro	insmode
+		~KEYCTRL4	insmode
+		endm
+
+~INTVCS		macro	intno,jobadr
+		move.l	jobadr,-(sp)
+		move.w	intno,-(sp)
+		dc.w	$ff25
+		addq.l	#6,sp
+		endm
+
+~PSPSET		macro	pspadr
+		move.l	pspadr
+		dc.w	$ff26
+		addq.l	#4,sp
+		endm
+
+~GETTIM2	macro
+		dc.w	$ff27
+		endm
+
+~SETTIM2	macro	time
+		move.l	time,-(sp)
+		dc.w	$ff28
+		addq.l	#4,sp
+		endm
+
+~NAMESTS	macro	file,buffer
+		move.l	buffer,-(sp)
+		move.l	file,-(sp)
+		dc.w	$ff29
+		addq.l	#8,sp
+		endm
+
+~GETDATE	macro
+		dc.w	$ff2a
+		endm
+
+~SETDATE	macro	date
+		move.w	date,-(sp)
+		dc.w	$ff2b
+		addq.l	#2,sp
+		endm
+
+~GETTIME	macro
+		dc.w	$ff2c
+		endm
+
+~SETTIME	macro	time
+		move.w	time,-(sp)
+		dc.w	$ff2d
+		addq.l	#2,sp
+		endm
+
+~VERIFY		macro	frg
+		move.w	frg,-(sp)
+		dc.w	$ff2e
+		addq.l	#2,sp
+		endm
+
+~DUP0		macro	fileno,newno
+		move.w	newno,-(sp)
+		move.w	fileno,-(sp)
+		dc.w	$ff2f
+		addq.l	#4,sp
+		endm
+
+~VERNUM		macro
+		dc.w	$ff30
+		endm
+
+~KEEPPR		macro	prglen,code
+		move.w	code,-(sp)
+		move.l	prglen,-(sp)
+		dc.w	$ff31
+		addq.l	#6,sp
+		endm
+
+~GETDPB		macro	drive,dpbptr
+		move.l	dpbptr,-(sp)
+		move.w	drive,-(sp)
+		dc.w	$ff32
+		addq.l	#6,sp
+		endm
+
+~BREAKCK	macro	flg
+		move.w	flg,-(sp)
+		dc.w	$ff33
+		addq.l	#2,sp
+		endm
+
+~DRVXCHG	macro	old,new
+		move.w	new,-(sp)
+		move.w	old,-(sp)
+		dc.w	$ff34
+		addq.l	#4,sp
+		endm
+
+~INTVCG		macro	intno
+		move.w	intno,-(sp)
+		dc.w	$ff35
+		addq.l	#2,sp
+		endm
+
+~DSKFRE		macro	drive,buffer
+		move.l	buffer,-(sp)
+		move.w	drive,-(sp)
+		dc.w	$ff36
+		addq.l	#6,sp
+		endm
+
+~NAMECK		macro	file,buffer
+		move.l	buffer,-(sp)
+		move.l	file,-(sp)
+		dc.w	$ff37
+		addq.l	#8,sp
+		endm
+
+~MKDIR		macro	nameptr
+		move.l	nameptr,-(sp)
+		dc.w	$ff39
+		addq.l	#4,sp
+		endm
+
+~RMDIR		macro	nameptr
+		move.l	nameptr,-(sp)
+		dc.w	$ff3a
+		addq.l	#4,sp
+		endm
+
+~CHDIR		macro	nameptr
+		move.l	nameptr,-(sp)
+		dc.w	$ff3b
+		addq.l	#4,sp
+		endm
+
+~CREATE		macro	nameptr,atr
+		move.w	atr,-(sp)
+		move.l	nameptr,-(sp)
+		dc.w	$ff3c
+		addq.l	#6,sp
+		endm
+
+~OPEN		macro	nameptr,mode
+		move.w	mode,-(sp)
+		move.l	nameptr,-(sp)
+		dc.w	$ff3d
+		addq.l	#6,sp
+		endm
+
+~CLOSE		macro	fileno
+		move.w	fileno,-(sp)
+		dc.w	$ff3e
+		addq.l	#2,sp
+		endm
+
+~READ		macro	fileno,dataptr,size
+		move.l	size,-(sp)
+		move.l	dataptr,-(sp)
+		move.w	fileno,-(sp)
+		dc.w	$ff3f
+		lea	10(sp),sp
+		endm
+
+~WRITE		macro	fileno,dataptr,size
+		move.l	size,-(sp)
+		move.l	dataptr,-(sp)
+		move.w	fileno,-(sp)
+		dc.w	$ff40
+		lea	10(sp),sp
+		endm
+
+~DELETE		macro	nameptr
+		move.l	nameptr,-(sp)
+		dc.w	$ff41
+		addq.l	#4,sp
+		endm
+
+~SEEK		macro	fileno,offset,mode
+		move.w	mode,-(sp)
+		move.l	offset,-(sp)
+		move.w	fileno,-(sp)
+		dc.w	$ff42
+		addq.l	#8,sp
+		endm
+
+~CHMOD		macro	nameptr,atr
+		move.w	atr,-(sp)
+		move.l	nameptr,-(sp)
+		dc.w	$ff43
+		addq.l	#6,sp
+		endm
+
+~IOCTRL0	macro	fileno
+		move.w	fileno,-(sp)
+		move.w	#$0000,-(sp)
+		dc.w	$ff44
+		addq.l	#4,-(sp)
+		endm
+
+~IOCTRLGT	macro	fileno
+		~IOCTRL0	fileno
+		endm
+
+~IOCTRL1	macro	fileno,dt
+		move.w	dt,-(sp)
+		move.w	fileno,-(sp)
+		move.w	#$0001,-(sp)
+		dc.w	$ff44
+		addq.l	#6,-(sp)
+		endm
+
+~IOCTRLST	macro	fileno,dt
+		~IOCTRL1	fileno,dt
+		endm
+
+~IOCTRL2	macro	fileno,ptr,len
+		move.l	len,-(sp)
+		move.l	ptr,-(sp)
+		move.w	fileno,-(sp)
+		move.w	#$0002,-(sp)
+		dc.w	$ff44
+		lea	12(sp),sp
+		endm
+
+~IOCTRLRH	macro	fileno,ptr,len
+		~IOCTRL2	fileno,ptr,len
+		endm
+
+~IOCTRL3	macro	fileno,ptr,len
+		move.l	len,-(sp)
+		move.l	ptr,-(sp)
+		move.w	fileno,-(sp)
+		move.w	#$0003,-(sp)
+		dc.w	$ff44
+		lea	12(sp),sp
+		endm
+
+~IOCTRLWH	macro	fileno,ptr,len
+		~IOCTRL3	fileno,ptr,len
+		endm
+
+~IOCTRL4	macro	drive,ptr,len
+		move.l	len,-(sp)
+		move.l	ptr,-(sp)
+		move.w	drive,-(sp)
+		move.w	#$0004,-(sp)
+		dc.w	$ff44
+		lea	12(sp),sp
+		endm
+
+~IOCTRLRD	macro	fileno,ptr,len
+		~IOCTRL4	fileno,ptr,len
+		endm
+
+~IOCTRL5	macro	drive,ptr,len
+		move.l	len,-(sp)
+		move.l	ptr,-(sp)
+		move.w	drive,-(sp)
+		move.w	#$0005,-(sp)
+		dc.w	$ff44
+		lea	12(sp),sp
+		endm
+
+~IOCTRLWD	macro	fileno,ptr,len
+		~IOCTRL5	fileno,ptr,len
+		endm
+
+~IOCTRL6	macro	fileno
+		move.w	fileno,-(sp)
+		move.w	#$0006,-(sp)
+		dc.w	$ff44
+		addq.l	#4,-(sp)
+		endm
+
+~IOCTRLIS	macro	fileno
+		~IOCTRL6	fileno
+		endm
+
+~IOCTRL7	macro	fielno
+		move.w	fielno,-(sp)
+		move.w	#$0007,-(sp)
+		dc.w	$ff44
+		addq.l	#4,-(sp)
+		endm
+
+~IOCTRLOS	macro	fileno
+		~IOCTRL7	fileno
+		endm
+
+~IOCTRL9	macro	drive
+		move.w	drive,-(sp)
+		move.w	#$0009,-(sp)
+		dc.w	$ff44
+		addq.l	#4,-(sp)
+		endm
+
+~IOCTRLDVGT	macro	drive
+		~IOCTRL9	drive
+		endm
+
+~IOCTRL10	macro	fileno
+		move.w	fileno,-(sp)
+		move.w	#$0010,-(sp)
+		dc.w	$ff44
+		addq.l	#4,-(sp)
+		endm
+
+~IOCTRLFDGT	macro	fileno
+		~IOCTRL10	fileno
+		endm
+
+~IOCTRL11	macro	count,time
+		move.w	time,-(sp)
+		move.w	count,-(sp)
+		move.w	#$0011,-(sp)
+		dc.w	$ff44
+		addq.l	#6,-(sp)
+		endm
+
+~IOCTRLRTSET	macro	count,time
+		~IOCTRL11	count,time
+		endm
+
+~IOCTRL12	macro	fileno,f_code,ptr
+		move.l	ptr,-(sp)
+		move.w	f_code,-(sp)
+		move.w	fileno,-(sp)
+		move.w	#$0012,-(sp)
+		dc.w	$ff44
+		lea	10(sp),sp
+		endm
+
+~IOCTRLFDCTL	macro	fileno,f_code,ptr
+		~IOCTRL12	fileno,f_code,ptr
+		endm
+
+~IOCTRL13	macro	drive,f_code,ptr
+		move.l	ptr,-(sp)
+		move.w	f_code,-(sp)
+		move.w	drive,-(sp)
+		move.w	#$0013,-(sp)
+		dc.w	$ff44
+		lea	10(sp),sp
+		endm
+
+~IOCTRLDVCTL	macro	fileno,f_code,ptr
+		~IOCTRL13	fileno,f_code,ptr
+		endm
+
+~DUP		macro	fileno
+		move.w	fileno,-(sp)
+		dc.w	$ff45
+		addq.l	#2,sp
+		endm
+
+~DUP2		macro	fileno,newno
+		move.w	newno,-(sp)
+		move.w	fileno,-(sp)
+		dc.w	$ff46
+		addq.l	#4,sp
+		endm
+
+~CURDIR		macro	drive,pathbf
+		move.l	pathbf,-(sp)
+		move.w	drive,-(sp)
+		dc.w	$ff47
+		addq.l	#6,sp
+		endm
+
+~MALLOC		macro	len
+		move.l	len,-(sp)
+		dc.w	$ff48
+		addq.l	#4,sp
+		endm
+
+~MFREE		macro	memptr
+		move.l	memptr,-(sp)
+		dc.w	$ff49
+		addq.l	#4,sp
+		endm
+
+~SETBLOK	macro	memptr,newlen
+		move.l	newlen,-(sp)
+		move.l	memptr,-(sp)
+		dc.w	$ff4a
+		addq.l	#8,sp
+		endm
+
+~EXEC0		macro	fil,p1,p2
+		move.l	p2,-(sp)
+		move.l	p1,-(sp)
+		move.l	fil,-(sp)
+		move.w	#$0000,-(sp)
+		dc.w	$ff4b
+		lea	14(sp),sp
+		endm
+
+~LOADEXEC	macro	fil,p1,p2
+		~EXEC0	fil,p1,p2
+		endm
+	
+~EXEC1		macro	fil,p1,p2
+		move.l	p2,-(sp)
+		move.l	p1,-(sp)
+		move.l	fil,-(sp)
+		move.w	#$0001,-(sp)
+		dc.w	$ff4b
+		lea	14(sp),sp
+		endm
+
+~LOAD		macro	fil,p1,p2
+		~EXEC1	fil,p1,p2
+		endm
+
+~EXEC2		macro	fil,p1,p2
+		move.l	p2,-(sp)
+		move.l	p1,-(sp)
+		move.l	fil,-(sp)
+		move.w	#$0002,-(sp)
+		dc.w	$ff4b
+		lea	14(sp),sp
+		endm
+
+~PATHCHK	macro	fil,p1,p2
+		~EXEC2	fil,p1,p2
+		endm
+	
+~EXEC3		macro	fil,p1,p2
+		move.l	p2,-(sp)
+		move.l	p1,-(sp)
+		move.l	fil,-(sp)
+		move.w	#$0003,-(sp)
+		dc.w	$ff4b
+		lea	14(sp),sp
+		endm
+
+~LOADONLY	macro	fil,type,p1,p2
+		~EXEC3	fil,type,p1,p2
+		endm
+	
+~EXEC4		macro	fil
+		move.l	fil,-(sp)
+		move.w	#$0004,-(sp)
+		dc.w	$ff4b
+		addq.l	#6,sp
+		endm
+
+~EXECONLY	macro	fil
+		~EXEC4	fil
+		endm
+
+~EXEC5		macro	fil,p1
+		move.l	p1,-(sp)
+		move.l	fil,-(sp)
+		move.w	#$0005
+		dc.w	$ff4b
+		lea	10(sp),sp
+		endm
+
+~BINDNO		macro	fil,p1,p2
+		~EXEC0	fil,p1,p2
+		endm
+
+~EXIT2		macro	code
+		move.w	code,-(sp)
+		dc.w	$ff4c
+		addq.l	#2,sp
+		endm
+
+~WAIT		macro
+		dc.w	$ff4d
+		endm
+
+~FILES		macro	filbuf,nameptr,atr
+		move.w	atr,-(sp)
+		move.l	nameptr,-(sp)
+		move.l	filbuf,-(sp)
+		dc.w	$ff4e
+		lea	10(sp),sp
+		endm
+
+~NFILES		macro	filbuf
+		move.l	filbuf,-(sp)
+		dc.w	$ff4f
+		addq.l	#4,sp
+		endm
+
+~SETPDB		macro	pdbadr
+		move.l	pdbadr,-(sp)
+		dc.w	$ff50
+		addq.l	#4,sp
+		endm
+
+~GETPDB		macro
+		dc.w	$ff51
+		endm
+
+~SETENV		macro	setname,env,setline
+		move.l	setline,-(sp)
+		move.l	env,-(sp)
+		move.l	setname,-(sp)
+		dc.w	$ff52
+		lea	12(sp),sp
+		endm
+
+~GETENV		macro	getname,env,getbuf
+		move.l	getbuf,-(sp)
+		move.l	env,-(sp)
+		move.l	getname,-(sp)
+		dc.w	$ff53
+		lea	12(sp),sp
+		endm
+
+~VERIFYG	macro	
+		dc.w	$ff54
+		endm
+
+~COMMON0	macro	neme
+		move.l	neme,-(sp)
+		move.w	#$0000,-(sp)
+		dc.w	$ff55
+		addq.l	#6,sp
+		endm
+
+~COMMON_CK	macro	neme
+		~COMMON0	neme
+		endm
+
+~COMMON1	macro	name,pos,buffer,len
+		move.l	len,-(sp)
+		move.l	buffer,-(sp)
+		move.l	pos,-(sp)
+		move.l	neme,-(sp)
+		move.w	#$0001,-(sp)
+		dc.w	$ff55
+		lea	18(sp),sp
+		endm
+
+~COMMON_RD	macro	name,pos,buffer,len
+		~COMMON1	neme,pos,buffer,len
+		endm
+
+~COMMON2	macro	name,pos,buffer,len
+		move.l	len,-(sp)
+		move.l	buffer,-(sp)
+		move.l	pos,-(sp)
+		move.l	neme,-(sp)
+		move.w	#$0002,-(sp)
+		dc.w	$ff55
+		lea	18(sp),sp
+		endm
+
+~COMMON_WT	macro	name,pos,buffer,len
+		~COMMON2	neme,pos,buffer,len
+		endm
+
+~COMMON3	macro	name,pos,id_psp,len
+		move.l	len,-(sp)
+		move.l	id_psp,-(sp)
+		move.l	pos,-(sp)
+		move.l	neme,-(sp)
+		move.w	#$0003,-(sp)
+		dc.w	$ff55
+		lea	18(sp),sp
+		endm
+
+~COMMON_LK	macro	name,pos,id_psp,len
+		~COMMON3	name,pos,id_psp,len
+		endm
+
+~COMMON4	macro	name,pos,id_psp,len
+		move.l	len,-(sp)
+		move.l	id_psp,-(sp)
+		move.l	pos,-(sp)
+		move.l	neme,-(sp)
+		move.w	#$0004,-(sp)
+		dc.w	$ff55
+		lea	18(sp),sp
+		endm
+
+~COMMON_FRE	macro	name,pos,id_psp,len
+		~COMMON4	name,pos,id_psp,len
+		endm
+
+~COMMON5	macro	neme
+		move.l	neme,-(sp)
+		move.w	#$0005,-(sp)
+		dc.w	$ff55
+		addq.l	#6,sp
+		endm
+
+~COMMON_DEL	macro	neme
+		~COMMON5	neme
+		endm
+
+~RENAME		macro	old,new
+		move.l	new,-(sp)
+		move.l	old,-(sp)
+		dc.w	$ff56
+		endm
+
+~FILEDATE	macro	fileno,datetime
+		move.l	datetime,-(sp)
+		move.w	fileno,-(sp)
+		dc.w	$ff57
+		addq.l	#6,sp
+		endm
+
+~MALLOC2	macro	md,len
+		move.l	len,-(sp)
+		move.w	md,-(sp)
+		dc.w	$ff58
+		addq.l	#6,sp
+		endm
+
+~MAKETMP	macro	nameptr,atr
+		move.w	atr,-(sp)
+		move.l	nameptr,-(sp)
+		dc.w	$ff5a
+		addq.l	#6,sp
+		endm
+
+~NEWFILE	macro	nameptr,atr
+		move.w	atr,-(sp)
+		move.l	nameptr,-(sp)
+		dc.w	$ff5b
+		addq.l	#6,sp
+		endm
+
+~LOCK		macro	md,fileno,offset,len
+		move.l	lem,-(sp)
+		move.l	offset,-(sp)
+		move.w	fileno,-(sp)
+		move.w	md,-(sp)
+		dc.w	$ff5c
+		lea	12(sp),sp
+		endm
+
+~ASSIGN0	macro	buff1,buff2
+		move.l	buff2,-(sp)
+		move.l	buff1,-(sp)
+		move.w	#$0000
+		dc.w	$ff5f
+		lea	10(sp),sp
+		endm
+
+~GETASSIGN	macro	buff1,buff2
+		~ASSIGN0	buff1,buff2
+		endm
+
+~ASSIGN1	macro	buff1,buff2,mode
+		move.w	mode,-(sp)
+		move.l	buff2,-(sp)
+		move.l	buff1,-(sp)
+		move.w	#$0001
+		dc.w	$ff5f
+		lea	12(sp),sp
+		endm
+
+~MAKEASSIGN	macro	buff1,buff2,mode
+		~ASSIGN1	buff1,buff2,mode
+		endm
+
+~ASSIGN4	macro	buff1
+		move.l	buff1,-(sp)
+		move.w	#$0004
+		dc.w	$ff5f
+		addq.l	#6,sp
+		endm
+
+~RASSIGN	macro	buff1
+		~ASSIGN4	buff1
+		endm
+
+~S_MALLOC	macro	md,len
+		move.l	len,-(sp)
+		mode.w	md,-(sp)
+		dc.w	$ff7d
+		addq.l	#6,-(sp)
+		endm
+
+~S_MFREE	macro	memptr
+		move.l	memptr,-(sp)
+		dc.w	$ff7e
+		addq.l	#4,sp
+		endm
+
+~S_PROCESS	macro	id,start,length,i_len
+		move.l	i_len,-(sp)
+		move.l	length,-(sp)
+		move.l	start,-(sp)
+		move.w	id,-(sp)
+		dc.w	$ff7f
+		lea	14(sp),sp
+		endm
+
+~DISKRED	macro	adr,drive,sect,sectlen
+		move.w	sectlen,-(sp)
+		move.w	sect,-(sp)
+		move.w	drive,-(sp)
+		move.l	adr,-(sp)
+		dc.w	$fff3
+		lea	10(sp),sp
+		endm
+
+~DISKRED2	macro	adr,drive,sect,sectlen
+		move.l	sectlen,-(sp)
+		move.l	sect,-(sp)
+		move.w	drive,-(sp)
+		move.l	adr,-(sp)
+		ori.b	#$80,(sp)
+		dc.w	$fff3
+		lea	14(sp),sp
+		endm
+
+~DISKWRT	macro	adr,drive,sect,sectlen
+		move.w	sectlen,-(sp)
+		move.w	sect,-(sp)
+		move.w	drive,-(sp)
+		move.l	adr,-(sp)
+		dc.w	$fff4
+		lea	10(sp),sp
+		endm
+
+~DISKWRT2	macro	adr,drive,sect,sectlen
+		move.l	sectlen,-(sp)
+		move.l	sect,-(sp)
+		move.w	drive,-(sp)
+		move.l	adr,-(sp)
+		ori.b	#$80,(sp)
+		dc.w	$fff4
+		lea	14(sp),sp
+		endm
+
+~INDOSFLG	macro
+		dc.w	$fff5
+		endm
+
+~SUPER_JSR	macro	jmpadr
+		move.l	jmpadr,-(sp)
+		dc.w	$fff6
+		addq.l	#4,sp
+		endm
+
+~BUS_ERR	macro	s_adr,d_adr,md
+		move.w	md,-(sp)
+		move.l	d_adr,-(sp)
+		move.l	s_adr,-(sp)
+		dc.w	$fff7
+		lea	10(sp),sp
+		endm
+
+~OPEN_PR	macro	name,count,init_usp,init_ssp,init_sr,init_pc,buff,sleep_time
+		move.l	sleep_time,-(sp)
+		move.l	buff,-(sp)
+		move.l	init_pc,-(sp)
+		move.w	init_sr,-(sp)
+		move.l	init_ssp,-(sp)
+		move.l	init_usp,-(sp)
+		move.w	count,-(sp)
+		move.l	name,-(sp)
+		dc.w	$fff8
+		lea	28(sp),sp
+		endm
+
+~KILL_PR	macro
+		dc.w	$fff9
+		endm
+
+~GET_PR		macro	id,buff
+		move.l	buff,-(sp)
+		move.w	id,-(sp)
+		dc.w	$fffa
+		addq.l	#6,sp
+		endm
+
+~SUSPEND_PR	macro	id
+		move.w	id,-(sp)
+		dc.w	$fffb
+		addq.l	#2,sp
+		endm
+
+~SLEEP_PR	macro	time
+		move.l	time,-(sp)
+		dc.w	$fffc
+		addq.l	#4,sp
+		endm
+
+~SEND_PR	macro	my_id,your_id,cmdno,u_buff,u_len
+		move.l	u_len,-(sp)
+		move.l	u_buff,-(sp)
+		move.w	cmdno,-(sp)
+		move.w	your_id,-(sp)
+		move.w	my_id,-(sp)
+		dc.w	$fffd
+		lea	14(sp),sp
+		endm
+
+~TIME_PR	macro
+		dc.w	$fffe
+		endm
+
+~CHANGE_PR	macro
+		dc.w	$ffff
+		endm
+

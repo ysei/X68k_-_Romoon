@@ -1,0 +1,630 @@
+	.nlist
+*	High-speed Assembler 専用マクロパッケージ
+*	HASMACRO.MAC
+*	$Id: HASMACRO.MAC,v 1.1 1994/04/13 14:01:54 nakamura Exp nakamura $
+
+
+*	IFcc ～ ELSEcc ～ ELSE ～ ENDIF
+
+~imax:=1	*テンポラリラベル番号
+~in:=0		*ネスティング用スタックサイズ
+
+~ipush	.macro	val
+	~i:=~in
+	.rept	~in
+	~j:=~i-1
+	~istk%~i:=~istk%~j
+	~i:=~j
+	.endm
+	~istk0:=val
+	~in:=~in+1
+	.endm
+
+~ipop	.macro
+	~in:=~in-1
+	~i:=0
+	.rept	~in
+	~j:=~i+1
+	~istk%~i:=~istk%~j
+	~i:=~j
+	.endm
+	.endm
+
+endif	.macro
+	.if	~istk0
+~i%~istk0:
+	~ipop
+	.else
+	~ipop
+~i%~istk0:
+	~ipop
+~i%~istk0:
+	~ipop
+	.endif
+	.endm
+
+else	.macro
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+
+ifeq	.macro	cmd
+	cmd
+	bne	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	.endm
+ifne	.macro	cmd
+	cmd
+	beq	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	.endm
+ifcc	.macro	cmd
+	cmd
+	bcs	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	.endm
+ifcs	.macro	cmd
+	cmd
+	bcc	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	.endm
+ifhi	.macro	cmd
+	cmd
+	bls	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	.endm
+ifls	.macro	cmd
+	cmd
+	bhi	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	.endm
+ifgt	.macro	cmd
+	cmd
+	ble	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	.endm
+ifge	.macro	cmd
+	cmd
+	blt	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	.endm
+ifle	.macro	cmd
+	cmd
+	bgt	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	.endm
+iflt	.macro	cmd
+	cmd
+	bge	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	.endm
+ifpl	.macro	cmd
+	cmd
+	bmi	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	.endm
+ifmi	.macro	cmd
+	cmd
+	bpl	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	.endm
+ifvc	.macro	cmd
+	cmd
+	bvs	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	.endm
+ifvs	.macro	cmd
+	cmd
+	bvc	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	.endm
+
+elseifeq	.macro	cmd
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	cmd
+	bne	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	~ipush	0
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	cmd
+	bne	~i%~imax
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+elseifne	.macro	cmd
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	cmd
+	beq	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	~ipush	0
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	cmd
+	beq	~i%~imax
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+elseifcc	.macro	cmd
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	cmd
+	bcs	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	~ipush	0
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	cmd
+	bcs	~i%~imax
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+elseifcs	.macro	cmd
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	cmd
+	bcc	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	~ipush	0
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	cmd
+	bcc	~i%~imax
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+elseifhi	.macro	cmd
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	cmd
+	bls	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	~ipush	0
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	cmd
+	bls	~i%~imax
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+elseifls	.macro	cmd
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	cmd
+	bhi	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	~ipush	0
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	cmd
+	bhi	~i%~imax
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+elseifgt	.macro	cmd
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	cmd
+	ble	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	~ipush	0
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	cmd
+	ble	~i%~imax
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+elseifge	.macro	cmd
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	cmd
+	blt	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	~ipush	0
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	cmd
+	blt	~i%~imax
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+elseifle	.macro	cmd
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	cmd
+	bgt	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	~ipush	0
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	cmd
+	bgt	~i%~imax
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+elseiflt	.macro	cmd
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	cmd
+	bge	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	~ipush	0
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	cmd
+	bge	~i%~imax
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+elseifpl	.macro	cmd
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	cmd
+	bmi	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	~ipush	0
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	cmd
+	bmi	~i%~imax
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+elseifmi	.macro	cmd
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	cmd
+	bpl	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	~ipush	0
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	cmd
+	bpl	~i%~imax
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+elseifvc	.macro	cmd
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	cmd
+	bvs	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	~ipush	0
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	cmd
+	bvs	~i%~imax
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+elseifvs	.macro	cmd
+	.if	~istk0
+	bra	~i%~imax
+~i%~istk0:
+	~istk0:=~imax
+	~imax:=~imax+1
+	cmd
+	bvc	~i%~imax
+	~ipush	~imax
+	~imax:=~imax+1
+	~ipush	0
+	.else
+	bra	~i%~istk2
+~i%~istk1:
+	cmd
+	bvc	~i%~imax
+	~istk1:=~imax
+	~imax:=~imax+1
+	.endif
+	.endm
+
+
+*	WHILEcc ～ ENDWHILE
+*	REPEAT ～ UNTILcc
+*	FOR ～ NEXT
+*	BREAK
+*	CONTINUE
+
+~lmax:=1	*テンポラリラベル番号
+~ln:=0		*ネスティング用スタックサイズ
+
+~lpush	.macro
+	~i:=~ln+2
+	.rept	~ln
+	~j:=~i-3
+	~lstk%~i:=~lstk%~j
+	~i:=~i-1
+	.endm
+	~lstk2:=~lmax
+	~lstk1:=~lmax+1
+	~lstk0:=~lmax+2
+	~lmax:=~lmax+3
+	~ln:=~ln+3
+	.endm
+
+~lpop	.macro
+	~ln:=~ln-3
+	~i:=0
+	.rept	~ln
+	~j:=~i+3
+	~lstk%~i:=~lstk%~j
+	~i:=~i+1
+	.endm
+	.endm
+
+repeat	.macro
+	~lpush
+~l%~lstk2:
+	.endm
+
+untileq	.macro	cmd
+~l%~lstk1:
+	cmd
+	bne	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+untilne	.macro	cmd
+~l%~lstk1:
+	cmd
+	beq	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+untilcc	.macro	cmd
+~l%~lstk1:
+	cmd
+	bcs	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+untilcs	.macro	cmd
+~l%~lstk1:
+	cmd
+	bcc	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+untilhi	.macro	cmd
+~l%~lstk1:
+	cmd
+	bls	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+untills	.macro	cmd
+~l%~lstk1:
+	cmd
+	bhi	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+untilgt	.macro	cmd
+~l%~lstk1:
+	cmd
+	ble	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+untilge	.macro	cmd
+~l%~lstk1:
+	cmd
+	blt	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+untille	.macro	cmd
+~l%~lstk1:
+	cmd
+	bgt	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+untillt	.macro	cmd
+~l%~lstk1:
+	cmd
+	bge	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+untilpl	.macro	cmd
+~l%~lstk1:
+	cmd
+	bmi	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+untilmi	.macro	cmd
+~l%~lstk1:
+	cmd
+	bpl	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+untilvc	.macro	cmd
+~l%~lstk1:
+	cmd
+	bvs	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+untilvs	.macro	cmd
+~l%~lstk1:
+	cmd
+	bvc	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+untilf	.macro	cmd
+~l%~lstk1:
+	cmd
+	bra	~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+
+
+	.irp	cond,eq,ne,cc,cs,hi,ls,gt,ge,le,lt,pl,mi,vc,vs
+while&cond	.macro	cmd
+	~lpush
+	bra	~l%~lstk1
+~l%~lstk2:
+~w%~lstk0	.macro
+	cmd
+	b&cond	~l%~lstk2
+	.endm
+	.endm
+	.endm
+
+endwhile	.macro
+~l%~lstk1:
+	~w%~lstk0
+~l%~lstk0:
+	~lpop
+	.endm
+
+
+for	.macro	cnt,cmd
+	cmd
+	~lpush
+~f%~lstk0	.reg	cnt
+~l%~lstk2:
+	.endm
+
+next	.macro
+~l%~lstk1:
+	dbra	~f%~lstk0,~l%~lstk2
+~l%~lstk0:
+	~lpop
+	.endm
+
+
+continue	.macro
+	bra	~l%~lstk1
+	.endm
+
+break	.macro
+	bra	~l%~lstk0
+	.endm
+
+	.irp	cond,eq,ne,cc,cs,hi,ls,gt,ge,le,lt,pl,mi,vc,vs
+
+continue&cond	.macro	cmd
+	cmd
+	b&cond	~l%~lstk1
+	.endm
+
+break&cond	.macro	cmd
+	cmd
+	b&cond	~l%~lstk0
+	.endm
+
+	.endm
+
+
+	.list

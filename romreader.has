@@ -1,0 +1,135 @@
+
+*	ROM-READER	Written by Seisei Yamaguchi
+
+	cpu	68000
+
+	include	doscall.mac
+	include	doscall2.mac
+	include	iocscall.mac
+	include	hasmacro.mac
+	include	CONST.H
+	include	naw.mac
+
+MESOUT	macro	mes_ptr
+	m	<lea mes_ptr,a1>,	<BSR MESOUT_>
+ENDM
+
+INPUT1	macro	mes_ptr
+	MESOUT	mes_ptr
+	~INKEY
+ENDM
+*-----------------
+READ	macro	paraadr
+	lea	paraadr,a2
+	BSR	~ROM_READ
+ENDM
+*-------------------
+_000_rom_size	equ	$20000
+
+_rom_head	equ	$fc0000
+_1M_head	equ	$fc0000
+_512_head	equ	$fc0000
+_256_head	equ	$fd0000
+_512_size	equ	512*1024/8
+_256_size	equ	256*1024/8
+
+	text
+	even
+
+ENT
+
+	PRINT	__mes__title
+
+	BSR	INIT
+
+	MAIN:
+		MESOUT	__mes__main_menu
+		@@:
+			~GETC
+			IFn NE,	<cmp.b #'',d0>,	<BRA @F>
+			IFn NE,	<cmp.b #'0',d0>,	<BRA @F>
+		IFn NE,	<cmp.b #'1',d0>,	<BSR ROM_READ>,	<BRA MAIN>
+		IFn NE,	<cmp.b #'2',d0>,	<BSR SRAM_WRITE>,	<BRA MAIN>
+		IFn NE,	<cmp.b #'4',d0>,	<BSR SAVE_FILE>,	<BRA MAIN>
+		BRA	@B
+
+		@@:
+	~EXIT
+
+
+*---------------------
+INIT
+*	m	<move.l #_000_rom_head,a1>,	<lea _iplrom_buf,a2>	*Keep IPL-ROM-
+*	LP	_000_rom_size/4-1,d7,	<move.l (a1)+,(a2)+>		*image
+RTS
+*--------------------
+ROM_READ
+	1:
+		MESOUT	__mes__romread_menu
+		@@:
+			~GETC
+			IFn NE,	<cmp.b #'',d0>,	<BRA @F>
+			IFn NE,	<cmp.b #'0',d0>,	<BRA @F>
+		IFn NE,	<cmp.b #'5',d0>,	<READ __256para>,	<BRA 1B>
+		IFn NE,	<cmp.b #'7',d0>,	<READ __512para>,	<BRA 1B>
+		BRA	@B
+
+	@@:
+RTS
+*-------
+~ROM_READ
+	SUPER	__sspbuf
+
+	lea	__mbuf,a4
+	move.l	(a2)+,a3	*ì«Ç›çûÇﬁROMÇÃêÊì™
+	move.l	(a2)+,d7	*åJÇËï‘ÇµâÒêî
+	move.l	d7,__read_rom_size
+	ifEQ	<move.l	(a2)+,d6>	*word_device_flag
+		m	<lsr.l #2,d7>,	<sub.l #1,d7>	*d7=d7/4-1
+		addq.l	#1,a3	;
+		@@:		;read odd addr only
+			m	<movep.l (0,a3),d0>,	<move.l	d0,(a4)+>
+			addq.l	#8,a3
+		dbF	d7,@B
+	else	*word device
+		asr.l	d7
+		sub.l	#1,d7
+		LOOP	d7,	<move.l (a3)+,(a4)+>
+	endif
+	USER	__sspbuf
+RTS
+*-------------
+SRAM_WRITE
+RTS
+*---------------------
+SAVE_FILE
+	~~FWRITE	<'ROMIMAGE'>,__mbuf,__read_rom_size
+*	tst	d0
+*	bGE	@F
+*		~EXIT2	#1
+*	@@:
+RTS
+*--------------------
+MESOUT_
+	~PRINT	a1
+RTS
+*--------------------
+	data
+__mes__title
+	dc.b	TAB,"'ROM-READER+ for ROMOON' v0.02 Written by S.Yamaguchi",CR,LF,EOS
+__mes__main_menu	dc.b	CR,LF,'Read rom...1	Write SRAM...2'
+			dc.b	'	Load...3	Save...4	',EOS
+__mes__romread_menu	dc.b	CR,LF,TAB,'8bit-256rom...5	8bit-512rom...7	',EOS
+
+	even
+__512para	dc.l	_512_head,	_512_size,	0
+__256para	dc.l	_256_head,	_256_size,	0
+
+__read_rom_size	dc.l	0
+__sspbuf	dc.l	0
+	bss
+	quad
+*	ds.b	1	*for wait
+__mbuf	ds.b	_000_rom_size
+
+	end	ENT
